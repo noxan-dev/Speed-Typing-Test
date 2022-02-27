@@ -8,7 +8,7 @@ speed = 0
 EASY_WORD_COUNT = 1
 EASY_TIMER = 60
 
-minutes, seconds = (0, 20)
+minutes, seconds = (0, 1)
 timer_format = datetime.timedelta(minutes=minutes, seconds=seconds)
 
 words = []
@@ -29,7 +29,7 @@ def countdown(min, sec):
         timer -= datetime.timedelta(seconds=1)
         window["-TIMER-"].Update(str(timer))
         if timer.seconds == 0:
-            sg.popup("Time's up!")
+            sg.popup_ok(f'Here are your results: {speed}/WPM', title="Time's up!")
     window["-TIMER-"].Update("0:00:00")
     time.sleep(1)
     return 0
@@ -48,9 +48,9 @@ def random_word_gen():
     return random_words
 
 
-dont_listen = ['BackSpace:8', 'Tab:9', 'Return:13', 'Shift:16', 'Control_L:17', 'Alt:18', 'PauseBreak:19',
-               'Caps_Lock:20', 'Shift_L:16', 'Alt_L:18', 'Alt_R:18', 'Win_L:91', 'Down:40', 'Right:39', 'Left:37',
-               'Up:38', 'MouseWheel:Up', 'MouseWheel:Down', 'Escape:27', '__TIMEOUT__']
+do_not_listen = ['BackSpace:8', 'Tab:9', 'Return:13', 'Shift:16', 'Control_L:17', 'Alt:18', 'PauseBreak:19',
+                 'Caps_Lock:20', 'Shift_L:16', 'Alt_L:18', 'Alt_R:18', 'Win_L:91', 'Down:40', 'Right:39', 'Left:37',
+                 'Up:38', 'MouseWheel:Up', 'MouseWheel:Down', 'Escape:27', '__TIMEOUT__']
 
 completed_words = []
 # ---===--- Loop taking in user input --- #
@@ -64,7 +64,7 @@ while True:
         print(words)
         break
     if len(event) > 1:
-        if event not in dont_listen:
+        if event not in do_not_listen:
             text_elem.update(value=str(event)[0])
     if ord(str(event)[0]) == 32:
         if values['-TEXT-'].lower() == 'start':
@@ -80,13 +80,5 @@ while True:
                     window['-WORDS-'].update(text_color='green')
                 else:
                     window['-WORDS-'].update(text_color='red')
-    # if x == "0:00:00":
-    #     completed_words.append(values['-TEXT-'].split(' '))
-    #     if completed_words == words:
-    #         sg.popup("You completed all the words in the list")
-    #     break
-        # speed += 1
-        # window['-SPEED-'].update(f"Speed: {speed}/WPM")
-
 
 window.close()
