@@ -22,12 +22,14 @@ layout = [[sg.Text("Start typing to track speed"), sg.Text(f"Speed: {speed}/WPM"
           [sg.Button("Cancel", key='OK')]]
 
 
-def countdown(minutes, seconds):
-    timer = datetime.timedelta(seconds=seconds, minutes=minutes)
+def countdown(min, sec):
+    timer = datetime.timedelta(seconds=sec, minutes=min)
     while timer.seconds > 0:
         time.sleep(1)
         timer -= datetime.timedelta(seconds=1)
         window["-TIMER-"].Update(str(timer))
+        if timer.seconds == 0:
+            sg.popup("Time's up!")
     window["-TIMER-"].Update("0:00:00")
     time.sleep(1)
     return 0
@@ -51,13 +53,11 @@ dont_listen = ['BackSpace:8', 'Tab:9', 'Return:13', 'Shift:16', 'Control_L:17', 
                'Up:38', 'MouseWheel:Up', 'MouseWheel:Down', 'Escape:27', '__TIMEOUT__']
 
 completed_words = []
-x = threading.Thread(target=countdown, args=(minutes, seconds), daemon=True).start()
 # ---===--- Loop taking in user input --- #
 while True:
     event, values = window.read()
     print(event, values)
     text_elem = window['-TEXT-']
-
     if event in ("OK", None):
         print(event, "exiting")
         print(completed_words)
@@ -67,14 +67,19 @@ while True:
         if event not in dont_listen:
             text_elem.update(value=str(event)[0])
     if ord(str(event)[0]) == 32:
-        completed_words.append(values['-TEXT-'].split(' '))
-        text_elem.update(value='')
-        window['-WORDS-'].update(completed_words + random_word_gen())
-        for word in completed_words:
-            if word in words:
-                window['-WORDS-'].update(text_color='green')
-            else:
-                window['-WORDS-'].update(text_color='red')
+        if values['-TEXT-'].lower() == 'start':
+            thread_timer = threading.Thread(target=countdown, args=(minutes, seconds), daemon=True).start()
+            text_elem.update(value='')
+            window['-WORDS-'].update(random_word_gen())
+        else:
+            completed_words.append(values['-TEXT-'].split(' '))
+            text_elem.update(value='')
+            window['-WORDS-'].update(completed_words + random_word_gen())
+            for word in completed_words:
+                if word in words:
+                    window['-WORDS-'].update(text_color='green')
+                else:
+                    window['-WORDS-'].update(text_color='red')
     # if x == "0:00:00":
     #     completed_words.append(values['-TEXT-'].split(' '))
     #     if completed_words == words:
