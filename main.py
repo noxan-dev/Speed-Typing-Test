@@ -5,6 +5,7 @@ import time
 import PySimpleGUI as sg
 
 wpm = 0
+missed_words = 0
 EASY_WORD_COUNT = 1
 EASY_TIMER = 60
 
@@ -16,6 +17,7 @@ sg.set_options(font=("Courier New", 10))
 
 layout = [[sg.Text("Start typing to track speed"), sg.Text(f"Speed: {wpm}/WPM", auto_size_text=True, key="-SPEED-"),
            sg.Text(f"Time Left {timer_format}: ", key="-TIMER-")],
+          [sg.Text("", size=(20, 1), auto_size_text=True, key="-OUTPUT-")],
           [sg.Text('Start', auto_size_text=True, text_color='black', key="-WORDS-")],
           [sg.Multiline("", size=(30, 10), no_scrollbar=True, key='-TEXT-')],
           [sg.Button("Cancel", key='OK')]]
@@ -30,7 +32,6 @@ def countdown(min, sec):
         window["-TIMER-"].Update(str(timer))
         if timer.seconds == 0:
             wpm = len(completed_words) - missed_words
-            print(len(completed_words))
             sg.popup_ok(f'Here are your results: {wpm}/WPM', title="Time's up!")
     window["-TIMER-"].Update("0:00:00")
     time.sleep(1)
@@ -57,7 +58,7 @@ do_not_listen = ['BackSpace:8', 'Tab:9', 'Return:13', 'Shift:16', 'Control_L:17'
                  'Up:38', 'MouseWheel:Up', 'MouseWheel:Down', 'Escape:27', '__TIMEOUT__']
 
 completed_words = []
-missed_words = 0
+
 # ---===--- Loop taking in user input --- #
 while True:
     event, values = window.read()
@@ -71,7 +72,7 @@ while True:
     if len(event) > 1:
         if event not in do_not_listen and event not in completed_words:
             text_elem.update(value=str(event)[0])
-    if ord(str(event)[0]) == 32:
+    if ord(str(event)[0]) == 32 or ord(str(event)[0]) == 13:
         if values['-TEXT-'].lower() == 'start':
             thread_timer = threading.Thread(target=countdown, args=(minutes, seconds), daemon=True).start()
             text_elem.update(value='')
@@ -79,12 +80,13 @@ while True:
         else:
             completed_words.append(values['-TEXT-'].split(' '))
             text_elem.update(value='')
-            window['-WORDS-'].update(f'Last word: {completed_words[-1]}\nNew Word: {random_word_gen()}')
+            window['-WORDS-'].update(f'New Word: {random_word_gen()}')
+            window['-OUTPUT-'].update(f'Last word: {completed_words[-1]}')
             for word in completed_words:
                 if word in words:
-                    window['-WORDS-'].update(text_color='green')
+                    window['-OUTPUT-'].update(text_color='green')
                 else:
                     missed_words += 1
-                    window['-WORDS-'].update(text_color='red')
+                    window['-OUTPUT-'].update(text_color='red')
 
 window.close()
