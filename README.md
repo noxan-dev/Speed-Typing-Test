@@ -1,2 +1,2 @@
 # Speed-Typing-Test
-Test your typing speed, WIP
+Test your typing speed
